@@ -24,10 +24,7 @@ router.post('/signup', async (req, res) => {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
       const user = await User.create({ email, password: hashedPassword });
-      res.cookie('user', user.email, {
-        signed: true,
-        maxAge: 2 * 60 * 1000,
-      });
+      req.session.isAuth = true;
       res.send({
         status: 200,
         message: 'User registered successfully',
@@ -44,7 +41,11 @@ router.post('/signup', async (req, res) => {
 //login
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
-  if (req.signedCookies.user) {
+  // if (req.signedCookies.user) {
+  //   res.status(400).send('You are already signedin');
+  //   return;
+  // }
+  if (req.session.isAuth) {
     res.status(400).send('You are already signedin');
     return;
   }
@@ -58,10 +59,7 @@ router.post('/login', async (req, res) => {
     } else {
       const isMatch = await bcrypt.compare(password, user.password);
       if (isMatch) {
-        res.cookie('user', user.email, {
-          signed: true,
-          maxAge: 2 * 60 * 1000,
-        });
+        req.session.isAuth = true;
         res.send({ status: 200, message: 'Login Successful' });
       } else {
         res.status(400).send({ status: 400, error: 'Incorrect password' });
@@ -74,8 +72,8 @@ router.post('/login', async (req, res) => {
 
 //logout
 router.post('/logout', (req, res) => {
-  if (req.signedCookies.user) {
-    res.clearCookie('user');
+  if (req.session.isAuth) {
+    req.session.destroy();
     res.send('You are logged out');
   } else {
     res.status(400).send('You are not logged in');
