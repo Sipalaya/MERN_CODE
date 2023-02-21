@@ -2,6 +2,7 @@ const express = require('express');
 const User = require('../models/userSchema');
 const bcrypt = require('bcryptjs');
 const validator = require('validator');
+const createToken = require('../utils/createToken');
 
 const router = express.Router();
 
@@ -24,10 +25,11 @@ router.post('/signup', async (req, res) => {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
       const user = await User.create({ email, password: hashedPassword });
-      req.session.isAuth = true;
+      const token = createToken(user._id);
       res.send({
         status: 200,
         message: 'User registered successfully',
+        token,
       });
     } catch (e) {
       res.status(400).send({
@@ -45,10 +47,10 @@ router.post('/login', async (req, res) => {
   //   res.status(400).send('You are already signedin');
   //   return;
   // }
-  if (req.session.isAuth) {
-    res.status(400).send('You are already signedin');
-    return;
-  }
+  // if (req.session.isAuth) {
+  //   res.status(400).send('You are already signedin');
+  //   return;
+  // }
   try {
     const user = await User.findOne({ email });
     if (!user) {
@@ -59,8 +61,8 @@ router.post('/login', async (req, res) => {
     } else {
       const isMatch = await bcrypt.compare(password, user.password);
       if (isMatch) {
-        req.session.isAuth = true;
-        res.send({ status: 200, message: 'Login Successful' });
+        const token = createToken(user._id);
+        res.send({ status: 200, message: 'Login Successful', token });
       } else {
         res.status(400).send({ status: 400, error: 'Incorrect password' });
       }

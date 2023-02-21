@@ -1,9 +1,10 @@
 const express = require('express');
 const Course = require('../models/courseSchema');
+const checkAuth = require('../middleware/checkAuth');
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
+router.get('/', checkAuth, async (req, res) => {
   if (req.query.id) {
     try {
       const course = await Course.findById(req.query.id);
@@ -13,6 +14,7 @@ router.get('/', async (req, res) => {
     }
   } else {
     const course = await Course.find().select('title ratings author tags -_id');
+    console.log(req.user);
     res.send(course);
   }
 });
