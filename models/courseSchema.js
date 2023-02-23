@@ -13,10 +13,8 @@ const courseSchema = new Schema(
       trim: true,
     },
     author: {
-      type: String,
-      required: true,
-      minlength: [3, 'Course title must be atleast 3 character long'],
-      maxlength: 50,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Author',
     },
     ratings: {
       type: Number,

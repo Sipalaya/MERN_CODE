@@ -8,7 +8,7 @@ module.exports = async (req, res, next) => {
   const token = authorization.split(' ')[1];
 
   try {
-    const _id = jwt.verify(token, '1234queorn32984usadh34');
+    const _id = jwt.verify(token, process.env.JWT_SECRET);
     req.user = await User.findById(_id).select('email');
     next();
   } catch (e) {

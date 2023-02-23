@@ -4,7 +4,7 @@ const checkAuth = require('../middleware/checkAuth');
 
 const router = express.Router();
 
-router.get('/', checkAuth, async (req, res) => {
+router.get('/', async (req, res) => {
   if (req.query.id) {
     try {
       const course = await Course.findById(req.query.id);
@@ -13,28 +13,33 @@ router.get('/', checkAuth, async (req, res) => {
       res.send(e.message);
     }
   } else {
-    const course = await Course.find().select('title ratings author tags -_id');
+    const course = await Course.find().populate(
+      'author',
+      'fullname email -_id'
+    );
     console.log(req.user);
     res.send(course);
   }
 });
 
 router.post('/', (req, res) => {
+  console.log(req.body);
   const course = req.body;
   errMessage = null;
   if (course.title == '') {
     errMessage = 'title must not be empty string';
     res.status(400).send({ error: errMessage });
     return;
-  } else if (course.ratings < 0)
-    Course.create(course)
-      .then((c) =>
-        res.send({
-          msg: 'Course added successfully',
-          course: c,
-        })
-      )
-      .catch((err) => res.send(err.message));
+  } else if (course.ratings < 0) {
+  }
+  Course.create(course)
+    .then((c) =>
+      res.send({
+        msg: 'Course added successfully',
+        course: c,
+      })
+    )
+    .catch((err) => res.send(err.message));
 });
 
 router.put('/:id', (req, res) => {

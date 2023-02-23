@@ -1,0 +1,17 @@
+let course = {
+    courseid: 1,
+    courseName: 'python',
+    author: 'ABC'
+}
+
+//Normalize -> Reference -> Data Consistency
+let author: {_id, name, phone, profilelink,}
+let course: {name, id, author: {
+    type:mongodbid,
+    ref: 'AuthorModel'
+}, reviews : {type: mongodbid, ref:'Review'}}
+
+//Denormalize -> Embeded documents -> Increase performance
+let author: {_id, name, phone, profilelink,}
+let course: {name, id, author: author}
+course = {id:1, name: node, author: {id:1,name, phone, profilelink}}
